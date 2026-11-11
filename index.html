@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: #e4e6eb;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Form Styling */
+        .form-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        input, select {
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            transition: background 0.2s;
+        }
+
+        .btn-add { background: #28a745; align-self: flex-end; }
+        .btn-add:hover { background: #218838; }
+        .btn-delete { background: #dc3545; padding: 6px 12px; font-size: 13px; }
+        .btn-delete:hover { background: #c82333; }
+
+        /* Search & Controls */
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-bar input {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 15px;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f1f3f5;
+        }
+
+        /* Analytics Section Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-left: 5px solid #007bff;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .card h3 {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .card p {
+            font-size: 26px;
+            font-weight: bold;
+            color: #212529;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .badge-pass { background: #d4edda; color: #155724; }
+        .badge-fail { background: #f8d7da; color: #721c24; }
+        .badge-alert { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Student Management System</h1>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('studentsTab', this)">Student Directory</button>
+        <button class="tab-btn" onclick="switchTab('attendanceTab', this)">Attendance Analysis</button>
+        <button class="tab-btn" onclick="switchTab('marksTab', this)">Marks Analysis</button>
+    </div>
+
+    <!-- TAB 1: Student Management Directory -->
+    <div id="studentsTab" class="tab-content active">
+        <!-- Add Student Form -->
+        <form class="form-section" id="addStudentForm" onsubmit="handleAddStudent(event)">
+            <div class="form-group">
+                <label for="stdId">Student ID</label>
+                <input type="text" id="stdId" placeholder="e.g. S101" required>
+            </div>
+            <div class="form-group">
+                <label for="stdName">Full Name</label>
+                <input type="text" id="stdName" placeholder="e.g. Rahul Sharma" required>
+            </div>
+            <div class="form-group">
+                <label for="stdCourse">Course</label>
+                <input type="text" id="stdCourse" placeholder="e.g. Computer Science" required>
+            </div>
+            <div class="form-group">
+                <label for="stdAttendance">Attendance (%)</label>
+                <input type="number" id="stdAttendance" min="0" max="100" placeholder="0 - 100" required>
+            </div>
+            <div class="form-group">
+                <label for="stdMarks">Marks (out of 100)</label>
+                <input type="number" id="stdMarks" min="0" max="100" placeholder="0 - 100" required>
+            </div>
+            <button type="submit" class="btn btn-add">Add Student</button>
+        </form>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" oninput="searchStudents()" placeholder="🔍 Search by Name, ID, or Course...">
+        </div>
+
+        <!-- Student Records Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Course</th>
+                    <th>Attendance</th>
+                    <th>Marks</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody">
+                <!-- Dynamically populated -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TAB 2: Attendance Analysis -->
+    <div id="attendanceTab" class="tab-content">
+        <h2>Attendance Analysis Overview</h2>
+        <br>
+        <div class="metrics-grid">
+            <div class="card">
+                <h3>Average Attendance</h3>
+                <p id="avgAttendance">0%</p>
+            </div>
+            <div class="card">
+                <h3>Total Students</h3>
+                <p id="totalStudentsAtt">0</p>
+            </div>
+            <div class="card">
+                <h3>At Risk (< 75%)</h3>
+                <p id="lowAttendanceCount" style="color: #dc3545;">0</p>
+            </div>
+        </div>
+
+        <h3>Students with Low Attendance (< 75%)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Course</th>
+                    <th>Attendance Rate</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="lowAttendanceTableBody">
+                <!-- Dynamically populated -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TAB 3: Marks Analysis -->
+    <div id="marksTab" class="tab-content">
+        <h2>Marks Performance Analysis</h2>
+        <br>
+        <div class="metrics-grid">
+            <div class="card">
+                <h3>Class Average Marks</h3>
+                <p id="avgMarks">0</p>
+            </div>
+            <div class="card">
+                <h3>Highest Marks</h3>
+                <p id="highestMarks">0</p>
+            </div>
+            <div class="card">
+                <h3>Lowest Marks</h3>
+                <p id="lowestMarks">0</p>
+            </div>
+            <div class="card">
+                <h3>Pass Percentage (>= 40)</h3>
+                <p id="passPercentage">0%</p>
+            </div>
+        </div>
+
+        <h3>Individual Performance Breakdown</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Course</th>
+                    <th>Marks</th>
+                    <th>Grade</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="marksTableBody">
+                <!-- Dynamically populated -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Initializing Data from Local Storage or Default Set
+    let students = JSON.parse(localStorage.getItem('studentData')) || [
+        { id: "S101", name: "Ananya Rao", course: "Computer Science", attendance: 85, marks: 92 },
+        { id: "S102", name: "Vikram Kumar", course: "Electronics", attendance: 62, marks: 38 },
+        { id: "S103", name: "Sonia Verma", course: "Information Technology", attendance: 90, marks: 78 },
+        { id: "S104", name: "Kiran Patel", course: "Mechanical", attendance: 70, marks: 45 }
+    ];
+
+    // Save Data to Local Storage
+    function saveData() {
+        localStorage.setItem('studentData', JSON.stringify(students));
+    }
+
+    // Tab Navigation
+    function switchTab(tabId, element) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        element.classList.add('active');
+
+        if (tabId === 'attendanceTab') updateAttendanceAnalysis();
+        if (tabId === 'marksTab') updateMarksAnalysis();
+    }
+
+    // Render Main Directory Table
+    function renderDirectory(dataToRender = students) {
+        const tbody = document.getElementById('studentTableBody');
+        tbody.innerHTML = '';
+
+        if (dataToRender.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No students found</td></tr>`;
+            return;
+        }
+
+        dataToRender.forEach((student, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${student.id}</td>
+                <td>${student.name}</td>
+                <td>${student.course}</td>
+                <td>${student.attendance}%</td>
+                <td>${student.marks}</td>
+                <td>
+                    <button class="btn btn-delete" onclick="deleteStudent('${student.id}')">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Add New Student
+    function handleAddStudent(e) {
+        e.preventDefault();
+        
+        const id = document.getElementById('stdId').value.trim();
+        const name = document.getElementById('stdName').value.trim();
+        const course = document.getElementById('stdCourse').value.trim();
+        const attendance = parseInt(document.getElementById('stdAttendance').value);
+        const marks = parseInt(document.getElementById('stdMarks').value);
+
+        // Check for unique ID
+        if (students.some(s => s.id.toLowerCase() === id.toLowerCase())) {
+            alert('A student with this ID already exists!');
+            return;
+        }
+
+        students.push({ id, name, course, attendance, marks });
+        saveData();
+        renderDirectory();
+        
+        document.getElementById('addStudentForm').reset();
+    }
+
+    // Delete Student
+    function deleteStudent(id) {
+        if (confirm(`Are you sure you want to delete student ID: ${id}?`)) {
+            students = students.filter(student => student.id !== id);
+            saveData();
+            renderDirectory();
+        }
+    }
+
+    // Search Students Function
+    function searchStudents() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = students.filter(s => 
+            s.name.toLowerCase().includes(query) ||
+            s.id.toLowerCase().includes(query) ||
+            s.course.toLowerCase().includes(query)
+        );
+        renderDirectory(filtered);
+    }
+
+    // Attendance Analytics Module
+    function updateAttendanceAnalysis() {
+        const total = students.length;
+        if (total === 0) return;
+
+        const totalAttendance = students.reduce((sum, s) => sum + s.attendance, 0);
+        const avg = (totalAttendance / total).toFixed(1);
+        const lowAtt = students.filter(s => s.attendance < 75);
+
+        document.getElementById('avgAttendance').innerText = `${avg}%`;
+        document.getElementById('totalStudentsAtt').innerText = total;
+        document.getElementById('lowAttendanceCount').innerText = lowAtt.length;
+
+        const tbody = document.getElementById('lowAttendanceTableBody');
+        tbody.innerHTML = '';
+
+        if (lowAtt.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">All students meet attendance criteria (>= 75%)</td></tr>`;
+            return;
+        }
+
+        lowAtt.forEach(s => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${s.id}</td>
+                <td>${s.name}</td>
+                <td>${s.course}</td>
+                <td>${s.attendance}%</td>
+                <td><span class="badge badge-alert">Warning</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Marks Analytics Module
+    function calculateGrade(marks) {
+        if (marks >= 90) return 'A+';
+        if (marks >= 80) return 'A';
+        if (marks >= 70) return 'B';
+        if (marks >= 60) return 'C';
+        if (marks >= 40) return 'D';
+        return 'F';
+    }
+
+    function updateMarksAnalysis() {
+        const total = students.length;
+        if (total === 0) return;
+
+        const allMarks = students.map(s => s.marks);
+        const avg = (allMarks.reduce((a, b) => a + b, 0) / total).toFixed(1);
+        const max = Math.max(...allMarks);
+        const min = Math.min(...allMarks);
+        const passed = students.filter(s => s.marks >= 40).length;
+        const passPercent = ((passed / total) * 100).toFixed(1);
+
+        document.getElementById('avgMarks').innerText = avg;
+        document.getElementById('highestMarks').innerText = max;
+        document.getElementById('lowestMarks').innerText = min;
+        document.getElementById('passPercentage').innerText = `${passPercent}%`;
+
+        const tbody = document.getElementById('marksTableBody');
+        tbody.innerHTML = '';
+
+        students.forEach(s => {
+            const grade = calculateGrade(s.marks);
+            const isPass = s.marks >= 40;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${s.id}</td>
+                <td>${s.name}</td>
+                <td>${s.course}</td>
+                <td>${s.marks}</td>
+                <td><strong>${grade}</strong></td>
+                <td>
+                    <span class="badge ${isPass ? 'badge-pass' : 'badge-fail'}">
+                        ${isPass ? 'PASS' : 'FAIL'}
+                    </span>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Initial Load
+    renderDirectory();
+</script>
+
+</body>
+</html>
